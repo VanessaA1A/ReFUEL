@@ -38,3 +38,20 @@ exports.remove = async (req, res, next) => {
     res.status(204).send();
   } catch (err) { next(err); }
 };
+
+exports.nearby = async (req, res, next) => {
+  try {
+    const { lat, lng, radius } = req.query;
+    if (!lat || !lng) {
+      return res.status(400).json({ message: 'Se requieren lat y lng' });
+    }
+    const points = await CollectionPoint.findNearby({
+      latitude: parseFloat(lat),
+      longitude: parseFloat(lng),
+      radiusKm: radius ? parseFloat(radius) : 50,
+    });
+    res.json(points);
+  } catch (err) {
+    next(err);
+  }
+};
