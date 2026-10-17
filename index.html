@@ -121,7 +121,18 @@
             border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             scroll-snap-align: center; text-align: center; border-top: 5px solid var(--naranja-aceite);
         }
+        .producto-imagen { display: block; width: 100%; height: 360px; object-fit: cover; border-radius: 12px; margin-bottom: 1.25rem; }
+        .galeria-velas { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; height: 360px; margin-bottom: 1.25rem; }
+        .galeria-velas .producto-imagen { height: 100%; min-width: 0; margin-bottom: 0; }
         .producto-card h3 { color: var(--verde-hoja); font-size: 1.6rem; margin-bottom: 1rem; }
+        .producto-detalles { margin-top: 1.25rem; border-top: 1px solid #e5e9e4; padding-top: 1rem; text-align: left; }
+        .producto-detalles summary { color: var(--verde-hoja); cursor: pointer; font-weight: bold; text-align: center; }
+        .producto-detalles summary:hover { color: var(--naranja-hover); }
+        .producto-detalles p { margin-top: 0.85rem; color: #444; }
+        .producto-detalles .fuente { color: #666; font-size: 0.9rem; }
+
+        .seccion-nosotros { display: flex; gap: 4rem; align-items: center; background: var(--blanco); }
+        .nosotros-imagen { width: 100%; max-height: 420px; object-fit: cover; border-radius: 12px; }
 
         /* --- SECCIÓN FIDELIDAD SIMPLIFICADA --- */
         .seccion-fidelidad { background: var(--verde-claro); text-align: center; }
@@ -231,6 +242,8 @@
             .nivel-fidelidad { flex-direction: column; gap: 0.2rem; }
             .nivel-fidelidad .litros { width: 100%; text-align: left; }
             .nivel-fidelidad .regalo { text-align: left; }
+            .seccion-nosotros { flex-direction: column; gap: 2rem; }
+            .producto-imagen, .galeria-velas { height: 300px; }
         }
     </style>
 </head>
@@ -239,7 +252,7 @@
     <!-- HEADER -->
     <header>
         <div class="header-izquierda">
-            <img src="logo.png" alt="Logo ReFuel" class="logo-img">
+            <img src="/assets/brand-mark.png" alt="Símbolo ReFuel" class="logo-img">
             <h1 class="titulo-app">ReFuel</h1>
         </div>
         <nav class="menu-nav">
@@ -247,7 +260,7 @@
             <a href="#nosotros">Nosotros</a>
             <a href="#funciona">Cómo funciona</a>
             <a href="#productos">Productos</a>
-            <a href="#mapa">Acopio</a>
+            <a href="#acopio">Acopio</a>
         </nav>
         <nav id="nav-auth">
             <button id="btn-mostrar-login" class="btn-secundario">Iniciar Sesión</button>
@@ -266,14 +279,14 @@
     </section>
 
     <!-- SOBRE NOSOTROS -->
-    <section class="seccion-nosotros" id="nosotros" style="display: flex; gap: 4rem; align-items: center; background: var(--blanco);">
+    <section class="seccion-nosotros" id="nosotros">
         <div style="flex: 1;">
             <h2 class="titulo-seccion" style="text-align: left;">Sobre Nosotros</h2>
             <p style="font-size: 1.1rem; color: #444; margin-bottom: 1rem;">Somos el equipo <strong>Familia Medina</strong>, participando en el Rally Latinoamericano de Innovación desde la sede UAM - Jaguares.</p>
             <p style="font-size: 1.1rem; color: #444;"><strong>Nuestra Misión:</strong> Brindar a las familias una forma sencilla de obtener ingresos mediante la recolección de aceite de cocina usado, dándole una segunda vida a este residuo transformándolo en jabones y velas. Reducimos la contaminación del agua, apoyamos la economía local y fomentamos el hábito de reciclar junto a pulperías y empresas.</p>
         </div>
         <div style="flex: 1; display: flex; justify-content: center;">
-            <img src="logo.png" alt="Equipo ReFuel" style="max-width: 80%; height: auto; opacity: 0.9;">
+            <img class="nosotros-imagen" src="/assets/team-photo.jpg" alt="Equipo ReFuel, Familia Medina, en el Rally Latinoamericano de Innovación" loading="lazy">
         </div>
     </section>
 
@@ -300,7 +313,7 @@
             </div>
             <div class="paso">
                 <div class="paso-numero">4</div>
-                <h3>Producto Final</h3>
+                <h3>Producto terminado</h3>
                 <p>Nace el Jabón Modular Vegano y las Velas. Empaquetados en hoja de plátano (cero plástico).</p>
             </div>
         </div>
@@ -338,16 +351,40 @@
         
         <div class="carrusel-container">
             <div class="producto-card">
+                <img class="producto-imagen" src="/assets/recycled-soap.jpg" alt="Jabón ReFuel elaborado con aceite reciclado" loading="lazy">
                 <h3>Jabón Modular Vegano</h3>
                 <p>Bloques de 1 kg y barras de 100g con guías de corte. Fórmula 100% vegetal y biodegradable. A solo <strong>C$20</strong> la barra.</p>
+                <details class="producto-detalles">
+                    <summary>Saber más sobre el jabón</summary>
+                    <p>Cuando el aceite de cocina usado se vierte en desagües o cuerpos de agua, puede causar un daño ambiental importante. Un litro puede contaminar hasta 40,000 litros de agua. Reutilizarlo como materia prima para jabón ayuda a darle un nuevo uso a ese residuo.</p>
+                    <p>Además, elaborar una alternativa sólida puede ayudar a reducir la dependencia de detergentes líquidos comerciales y de los envases plásticos que los acompañan.</p>
+                    <p class="fuente">Referencia sobre contaminación del aceite: Jarquín Pascua et al. (2020).</p>
+                </details>
             </div>
             <div class="producto-card">
+                <div class="galeria-velas">
+                    <img class="producto-imagen" src="/assets/leaf-candle-1.jpg" alt="Vela ReFuel en recipiente de hoja" loading="lazy">
+                    <img class="producto-imagen" src="/assets/leaf-candle-2.jpg" alt="Vela aromática ReFuel" loading="lazy">
+                </div>
                 <h3>Velas Aromáticas</h3>
                 <p>Creadas aprovechando el aceite filtrado. Una alternativa económica y amigable con el medio ambiente para iluminar tu hogar.</p>
+                <details class="producto-detalles">
+                    <summary>Saber más sobre las velas</summary>
+                    <p>Las velas forman parte de la propuesta para aprovechar el aceite recolectado y transformarlo en un producto útil. Así, el proyecto explora más de una salida para el residuo y crea oportunidades de producción local.</p>
+                    <p>La recolección de última milla es clave: conectar hogares y comercios con los puntos de acopio permite que el aceite llegue a un proceso de aprovechamiento, en lugar de terminar en el desagüe o sin un destino claro.</p>
+                </details>
             </div>
             <div class="producto-card">
+                <img class="producto-imagen" src="/assets/fabricacion.jpg" alt="Proceso de fabricación: del aceite reciclado a las velas artesanales" loading="lazy">
                 <h3>Incentivo Económico</h3>
                 <p>Compramos tu aceite a <strong>C$10 por litro</strong> (familias) y C$5 por litro a empresas. Convertimos tu residuo en efectivo.</p>
+                <details class="producto-detalles">
+                    <summary>Saber más sobre el incentivo</summary>
+                    <p>En hogares de Managua, Chinandega, Estelí y Matagalpa, se estima que se genera alrededor de un litro de aceite usado al mes. Aunque sea poco, guardarlo y entregarlo puede representar un ingreso adicional para las familias.</p>
+                    <p>El modelo busca que el aceite tenga un valor para quien lo entrega: las familias reciben un pago y las empresas pueden recuperar valor de un residuo que, de otro modo, suelen entregar sin remuneración o pagar para retirar.</p>
+                    <p>La iniciativa prioriza a personas adultas y familias con ingresos limitados, con una forma sencilla de participar. Busca abrir una oportunidad en un mercado donde, según el análisis del proyecto, no hay un competidor directo.</p>
+                    <p class="fuente">Estimación de generación doméstica basada en el consumo nacional: FAO (2026).</p>
+                </details>
             </div>
         </div>
     </section>
@@ -363,7 +400,7 @@
                 <h3>Para Hogares</h3>
                 <div class="nivel-fidelidad">
                     <span class="litros">10 Litros</span>
-                    <span class="regalo">Sticker ecológico + Muestra de jabón.</span>
+                    <span class="regalo">Calcomanía ecológica + muestra de jabón.</span>
                 </div>
                 <div class="nivel-fidelidad">
                     <span class="litros">25 Litros</span>
@@ -388,7 +425,7 @@
                 </div>
                 <div class="nivel-fidelidad">
                     <span class="litros">25 Litros</span>
-                    <span class="regalo">Certificado + Sticker "Empresa Sostenible".</span>
+                    <span class="regalo">Certificado + calcomanía «Empresa Sostenible».</span>
                 </div>
                 <div class="nivel-fidelidad">
                     <span class="litros">50 Litros</span>
@@ -417,11 +454,17 @@
         <div class="b2b-imagen">
             <h3>Certificado de Trazabilidad</h3>
             <p>Garantizamos que cada litro que nos entregas tiene un destino final 100% trazable y seguro para el planeta.</p>
+            <details class="producto-detalles">
+                <summary>Saber más sobre la trazabilidad</summary>
+                <p>Restaurantes, hoteles y comedores generan volúmenes importantes de aceite. Si lo entregan a recolectores informales o pagan por retirarlo, pueden perder su valor económico y quedarse sin constancia verificable de su destino.</p>
+                <p>La propuesta de ReFuel es organizar la recolección y documentar el recorrido del residuo, para apoyar el cumplimiento de las obligaciones ambientales y reducir el riesgo de sanciones.</p>
+                <p class="fuente">Marco citado en la propuesta: Ley 217 (1996) y Ley 559 (2005), aplicadas por las autoridades correspondientes.</p>
+            </details>
         </div>
     </section>
 
     <!-- 5. MAPA -->
-    <section class="seccion-mapa" id="mapa">
+    <section class="seccion-mapa" id="acopio">
         <h2 class="titulo-seccion">Red Multicanal de Acopio</h2>
         <p class="subtitulo-seccion">Encuentra el centro más cercano en Managua, Estelí, Matagalpa o Chinandega.</p>
         <div id="mapa"></div>
@@ -478,7 +521,7 @@
             <h3>Registra tu entrega y obtén tu pago</h3>
             <p>Únete a nuestra red de proveedores, agenda tu entrega y ayuda al planeta.</p>
             <br>
-            <button id="btn-cta-registro" class="btn-primario" style="font-size: 1.2rem;">Crear Cuenta / Iniciar Sesión</button>
+            <button id="btn-cta-registro" class="btn-primario" style="font-size: 1.2rem;">Crear cuenta o iniciar sesión</button>
             
             <div id="seccion-auth" class="oculto">
                 <div id="form-login" class="caja-auth oculto">
@@ -556,7 +599,7 @@
 
     <!-- LÓGICA JAVASCRIPT -->
     <script>
-        const API_URL = 'http://localhost:3000/api';
+        const API_URL = '/api';
 
         async function obtenerMensajeError(res, mensajePredeterminado) {
             try {
@@ -568,9 +611,19 @@
         }
 
         // --- 1. MAPA ---
-        const mapa = L.map('mapa').setView([12.8654, -85.2072], 7); 
+        const limitesNicaragua = L.latLngBounds(
+            L.latLng(10.45, -87.9),
+            L.latLng(15.2, -82.4)
+        );
+        const mapa = L.map('mapa', {
+            minZoom: 6,
+            maxZoom: 12,
+            maxBounds: limitesNicaragua,
+            maxBoundsViscosity: 1,
+            wheelDebounceTime: 100
+        }).setView([12.8654, -85.2072], 7);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
+            attribution: 'Datos del mapa: &copy; colaboradores de OpenStreetMap'
         }).addTo(mapa);
 
         async function cargarMapa() {
@@ -773,7 +826,13 @@
                             // Sumamos los litros para la fidelidad
                             totalLitros += parseFloat(s.estimated_liters);
 
-                            let estadoTexto = s.status.toUpperCase();
+                            const estadosEnEspanol = {
+                                pending: 'Pendiente',
+                                confirmed: 'Confirmada',
+                                completed: 'Completada',
+                                cancelled: 'Cancelada'
+                            };
+                            const estadoTexto = estadosEnEspanol[s.status] || s.status;
                             let estadoColor = "var(--naranja-aceite)"; 
                             if(s.status === 'completed') estadoColor = "var(--verde-hoja)";
                             if(s.status === 'cancelled') estadoColor = "#d32f2f";
@@ -820,4 +879,4 @@
         actualizarUI();
     </script>
 </body>
-</html>
+</html>ten
