@@ -21,3 +21,6 @@ Thumbs.db
 # Dist
 dist/
 build/
+
+# Evidencia de entregas (archivos privados de usuarios)
+uploads/evidence/

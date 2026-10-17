@@ -221,8 +221,33 @@
         .caja label { font-weight: bold; margin-top: 0.5rem; color: #333; }
         .nota-verificacion { font-size: 0.85rem; color: #666; margin-top: -0.5rem; }
 
-        #lista-solicitudes { list-style: none; }
-        #lista-solicitudes li { padding: 1.5rem; border-left: 6px solid var(--naranja-aceite); background: var(--blanco); margin-bottom: 1rem; border-radius: 0 10px 10px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        #lista-solicitudes { display: grid; gap: 1rem; list-style: none; }
+        #lista-solicitudes > li { min-width: 0; padding: 1.25rem; border: 1px solid #e4e9e2; border-left: 4px solid var(--naranja-aceite); background: var(--blanco); border-radius: 8px; box-shadow: 0 3px 12px rgba(36, 61, 34, 0.06); }
+        #lista-solicitudes > li.estado-completada { border-left-color: var(--verde-hoja); }
+        #lista-solicitudes > li.estado-cancelada { border-left-color: #d32f2f; }
+        .entrega-cabecera { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; }
+        .entrega-litros { color: var(--texto-oscuro); font-size: 1.35rem; font-weight: 700; }
+        .entrega-estado { display: inline-flex; align-items: center; padding: 0.3rem 0.7rem; border-radius: 999px; background: #fff3df; color: #85540d; font-size: 0.82rem; font-weight: 700; }
+        .entrega-estado.estado-confirmada { background: #e7f1ff; color: #24578a; }
+        .entrega-estado.estado-completada { background: #e4f3e3; color: #276b23; }
+        .entrega-estado.estado-cancelada { background: #ffebee; color: #b71c1c; }
+        .entrega-datos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem 1rem; margin-top: 1rem; }
+        .entrega-dato { min-width: 0; color: #4c554a; font-size: 0.92rem; overflow-wrap: anywhere; }
+        .entrega-dato span { display: block; margin-bottom: 0.15rem; color: #7a8278; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .entrega-evidencia { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #edf0eb; }
+        .entrega-evidencia > small { display: block; margin-top: 0.6rem; color: #687066; line-height: 1.45; }
+        .evidencia-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 0.75rem; }
+        .evidencia-form label { grid-column: 1 / -1; color: var(--texto-oscuro); font-size: 0.9rem; font-weight: 700; }
+        .evidencia-form input[type="file"] { min-width: 0; width: 100%; color: #5c655a; font-size: 0.82rem; }
+        .evidencia-form input[type="file"]::file-selector-button { margin-right: 0.5rem; padding: 0.55rem 0.7rem; border: 1px solid #d9e4d6; border-radius: 6px; background: var(--verde-claro); color: var(--verde-hoja); font: inherit; font-weight: 700; cursor: pointer; }
+        .evidencia-form button { padding: 0.65rem 0.9rem; border-radius: 6px; font-size: 0.85rem; white-space: nowrap; }
+        .lista-vacia { padding: 1.5rem; border: 1px dashed #cbd7c8; border-radius: 8px; color: #626b60; background: #fbfcfa; text-align: center; }
+        .admin-solicitudes { margin-top: 2rem; }
+        .admin-filtros { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1rem 0; }
+        .admin-filtros button { padding: 0.55rem 1rem; font-size: 0.9rem; }
+        .admin-solicitud { padding: 1.25rem 0; border-top: 1px solid #ddd; }
+        .admin-evidencia { display: block; width: min(100%, 520px); max-height: 420px; object-fit: contain; object-position: left center; margin: 1rem 0; background: #f2f2f2; border-radius: 8px; }
+        .admin-acciones { display: flex; flex-wrap: wrap; gap: 0.6rem; }
 
         /* --- FOOTER --- */
         footer { background-color: var(--texto-oscuro); color: var(--blanco); text-align: center; padding: 3rem 5%; }
@@ -244,6 +269,10 @@
             .nivel-fidelidad .regalo { text-align: left; }
             .seccion-nosotros { flex-direction: column; gap: 2rem; }
             .producto-imagen, .galeria-velas { height: 300px; }
+            .entrega-datos { grid-template-columns: 1fr; gap: 0.65rem; }
+            .evidencia-form { grid-template-columns: 1fr; }
+            .evidencia-form label { grid-column: auto; }
+            .evidencia-form button { width: 100%; }
         }
     </style>
 </head>
@@ -586,6 +615,19 @@
                     </ul>
                 </div>
             </div>
+
+            <div id="panel-administracion" class="caja admin-solicitudes oculto">
+                <h3>Revisión de entregas</h3>
+                <p>Revisa la cartilla y confirma la entrega antes de marcarla como completada.</p>
+                <div class="admin-filtros" aria-label="Filtrar entregas por estado">
+                    <button type="button" class="btn-secundario" data-filtro="pending">Pendientes</button>
+                    <button type="button" class="btn-secundario" data-filtro="confirmed">Confirmadas</button>
+                    <button type="button" class="btn-secundario" data-filtro="completed">Completadas</button>
+                    <button type="button" class="btn-secundario" data-filtro="cancelled">Canceladas</button>
+                    <button type="button" class="btn-secundario" data-filtro="">Todas</button>
+                </div>
+                <div id="lista-administracion"><p>Cargando entregas...</p></div>
+            </div>
         </div>
 
     </section>
@@ -653,9 +695,11 @@
                 document.getElementById('aviso-invitado').classList.add('oculto');
                 document.getElementById('dashboard').classList.remove('oculto');
                 document.getElementById('nombre-usuario').innerText = usuario.name;
+                document.getElementById('panel-administracion').classList.toggle('oculto', usuario.role !== 'admin');
                 
                 cargarSelectsDashboard();
                 cargarMisSolicitudes();
+                if (usuario.role === 'admin') cargarSolicitudesAdmin();
             } else {
                 document.getElementById('nav-auth').classList.remove('oculto');
                 document.getElementById('aviso-invitado').classList.remove('oculto');
@@ -746,6 +790,110 @@
             window.location.reload();
         });
 
+        document.querySelectorAll('.admin-filtros [data-filtro]').forEach(boton => {
+            boton.addEventListener('click', () => cargarSolicitudesAdmin(boton.dataset.filtro));
+        });
+
+        async function subirEvidencia(event) {
+            event.preventDefault();
+            const formulario = event.currentTarget;
+            const id = formulario.dataset.evidenciaId;
+            const archivo = formulario.elements.evidence.files[0];
+            if (!archivo) return alert('Selecciona una foto de la cartilla.');
+
+            const datos = new FormData();
+            datos.append('evidence', archivo);
+            try {
+                const res = await fetch(`${API_URL}/requests/${id}/evidence`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                    body: datos
+                });
+                if (!res.ok) return alert(await obtenerMensajeError(res, 'No se pudo subir la evidencia.'));
+                alert('Foto enviada. La entrega queda pendiente de revisión.');
+                await cargarMisSolicitudes();
+                if (usuario?.role === 'admin') await cargarSolicitudesAdmin();
+            } catch (error) {
+                alert('No se pudo conectar con el servidor para subir la evidencia.');
+            }
+        }
+
+        async function actualizarEstadoSolicitud(id, status) {
+            try {
+                const res = await fetch(`${API_URL}/requests/${id}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+                if (!res.ok) {
+                    return alert(await obtenerMensajeError(res, 'No se pudo actualizar el estado.'));
+                }
+                await cargarSolicitudesAdmin(document.querySelector('.admin-filtros button.activo')?.dataset.filtro || '');
+                await cargarMisSolicitudes();
+            } catch (error) {
+                alert('No se pudo conectar con el servidor para actualizar el estado.');
+            }
+        }
+
+        async function cargarSolicitudesAdmin(status = '') {
+            const lista = document.getElementById('lista-administracion');
+            if (!lista || usuario?.role !== 'admin') return;
+            lista.innerHTML = '<p>Cargando entregas...</p>';
+            document.querySelectorAll('.admin-filtros [data-filtro]').forEach(boton => {
+                boton.classList.toggle('activo', boton.dataset.filtro === status);
+            });
+
+            try {
+                const query = status ? `?status=${encodeURIComponent(status)}` : '';
+                const res = await fetch(`${API_URL}/requests${query}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                if (!res.ok) throw new Error(await obtenerMensajeError(res, 'No se pudieron cargar las entregas.'));
+                const solicitudes = await res.json();
+                if (!solicitudes.length) {
+                    lista.innerHTML = '<p>No hay entregas en este filtro.</p>';
+                    return;
+                }
+
+                const estados = { pending: 'Pendiente', confirmed: 'Confirmada', completed: 'Completada', cancelled: 'Cancelada' };
+                lista.innerHTML = solicitudes.map(solicitud => {
+                    const evidencia = solicitud.has_evidence
+                        ? `<img class="admin-evidencia" data-evidence-id="${solicitud.id}" alt="Foto de evidencia de la entrega ${solicitud.id}" loading="lazy">`
+                        : '<p>Falta la foto de evidencia.</p>';
+                    const botones = solicitud.status === 'completed' || solicitud.status === 'cancelled'
+                        ? ''
+                        : `<div class="admin-acciones">
+                            ${solicitud.status === 'pending' && solicitud.has_evidence ? `<button type="button" class="btn-secundario" data-status="confirmed" data-id="${solicitud.id}">Confirmar evidencia</button>` : ''}
+                            ${solicitud.status === 'confirmed' && solicitud.has_evidence ? `<button type="button" class="btn-primario" data-status="completed" data-id="${solicitud.id}">Marcar completada</button>` : ''}
+                            <button type="button" class="btn-peligro" data-status="cancelled" data-id="${solicitud.id}">Cancelar</button>
+                        </div>`;
+                    return `<article class="admin-solicitud">
+                        <strong>${solicitud.user_name}</strong> · ${solicitud.estimated_liters} litros
+                        <br>Punto: ${solicitud.point_name || 'No especificado'}
+                        <br>Tipo: ${solicitud.oil_type_name || 'No especificado'}
+                        <br>Estado: ${estados[solicitud.status] || solicitud.status}
+                        ${evidencia}${botones}
+                    </article>`;
+                }).join('');
+
+                for (const image of lista.querySelectorAll('img[data-evidence-id]')) {
+                    const response = await fetch(`${API_URL}/requests/${image.dataset.evidenceId}/evidence`, {
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    });
+                    if (response.ok) image.src = URL.createObjectURL(await response.blob());
+                }
+
+                lista.querySelectorAll('[data-status][data-id]').forEach(boton => {
+                    boton.addEventListener('click', () => actualizarEstadoSolicitud(boton.dataset.id, boton.dataset.status));
+                });
+            } catch (error) {
+                lista.innerHTML = `<p>${error.message || 'No se pudieron cargar las entregas.'}</p>`;
+            }
+        }
+
         // --- 7. CARGAR SELECTS ---
         async function cargarSelectsDashboard() {
             try {
@@ -820,11 +968,10 @@
                     let totalLitros = 0;
 
                     if (solicitudes.length === 0) {
-                        lista.innerHTML = '<li>No tienes entregas registradas aún.</li>';
+                        lista.innerHTML = '<li class="lista-vacia">Aún no tienes entregas registradas. Cuando registres una, aparecerá aquí.</li>';
                     } else {
                         solicitudes.forEach(s => {
-                            // Sumamos los litros para la fidelidad
-                            totalLitros += parseFloat(s.estimated_liters);
+                            if (s.status === 'completed') totalLitros += parseFloat(s.estimated_liters);
 
                             const estadosEnEspanol = {
                                 pending: 'Pendiente',
@@ -833,17 +980,39 @@
                                 cancelled: 'Cancelada'
                             };
                             const estadoTexto = estadosEnEspanol[s.status] || s.status;
-                            let estadoColor = "var(--naranja-aceite)"; 
-                            if(s.status === 'completed') estadoColor = "var(--verde-hoja)";
-                            if(s.status === 'cancelled') estadoColor = "#d32f2f";
+                            const estadoClase = s.status === 'completed' ? 'completada'
+                                : s.status === 'cancelled' ? 'cancelada'
+                                : s.status === 'confirmed' ? 'confirmada' : 'pendiente';
+                            const fechaEntrega = s.created_at
+                                ? new Intl.DateTimeFormat('es-NI', { dateStyle: 'medium' }).format(new Date(s.created_at))
+                                : 'Fecha no disponible';
+                            const formularioEvidencia = s.status !== 'completed'
+                                ? `<div class="entrega-evidencia"><form class="evidencia-form" data-evidencia-id="${s.id}">
+                                    <label for="evidencia-${s.id}">${s.has_evidence ? 'Cambiar foto de la cartilla:' : 'Subir foto de la cartilla:'}</label>
+                                    <input id="evidencia-${s.id}" name="evidence" type="file" accept="image/jpeg,image/png,image/webp" required>
+                                    <button type="submit" class="btn-secundario">${s.has_evidence ? 'Actualizar evidencia' : 'Enviar evidencia'}</button>
+                                </form>
+                                <small>${s.has_evidence ? 'Foto enviada. La entrega queda pendiente de revisión.' : 'La entrega se completará después de revisar la evidencia.'}</small></div>`
+                                : '<div class="entrega-evidencia"><small>Evidencia revisada y entrega completada.</small></div>';
 
                             lista.innerHTML += `
-                                <li>
-                                    <strong style="font-size: 1.2rem; color: var(--verde-hoja)">${s.estimated_liters} Litros</strong> 
-                                    <br>En: ${s.point_name}
-                                    <br><small>Estado: <span style="color: ${estadoColor}; font-weight:bold;">${estadoTexto}</span></small>
+                                <li class="estado-${estadoClase}">
+                                    <div class="entrega-cabecera">
+                                        <strong class="entrega-litros">${s.estimated_liters} litros</strong>
+                                        <span class="entrega-estado estado-${estadoClase}">${estadoTexto}</span>
+                                    </div>
+                                    <div class="entrega-datos">
+                                        <div class="entrega-dato"><span>Punto de acopio</span>${s.point_name || 'No especificado'}</div>
+                                        <div class="entrega-dato"><span>Tipo de aceite</span>${s.oil_type_name || 'No especificado'}</div>
+                                        <div class="entrega-dato"><span>Registrada</span>${fechaEntrega}</div>
+                                        <div class="entrega-dato"><span>Evidencia</span>${s.has_evidence ? 'Foto recibida' : 'Pendiente de foto'}</div>
+                                    </div>
+                                    ${formularioEvidencia}
                                 </li>
                             `;
+                        });
+                        lista.querySelectorAll('.evidencia-form').forEach(formulario => {
+                            formulario.addEventListener('submit', subirEvidencia);
                         });
                     }
 
