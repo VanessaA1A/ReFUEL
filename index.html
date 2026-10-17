@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReFuel - El aceite de ayer es la luz de hoy</title>
+    
+    <!-- Leaflet CSS para el mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        /* ===== VARIABLES DE COLOR (Paleta ReFuel Verde y Naranja) ===== */
+        :root {
+            --color-naranja: #E59E26;
+            --color-verde: #388B3A;
+            --color-verde-oscuro: #256328;
+            --color-blanco: #ffffff;
+            --color-gris-claro: #f4f6f9;
+            --color-gris-oscuro: #333333;
+            --color-texto: #444444;
+            --sombra: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --radio: 12px;
+        }
+
+        /* ===== RESET Y BASE ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--color-texto);
+            background-color: var(--color-blanco);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3 { color: var(--color-gris-oscuro); font-weight: 700; }
+        a { text-decoration: none; color: inherit; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+        /* ===== HEADER ===== */
+        header {
+            background-color: var(--color-blanco);
+            box-shadow: var(--sombra);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        /* Logo con texto (Re en naranja, FUEL en verde) */
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--color-naranja);
+        }
+        .logo span { color: var(--color-verde); }
+
+        nav ul { display: flex; list-style: none; gap: 20px; align-items: center; }
+        nav a {
+            font-weight: 600;
+            color: var(--color-gris-oscuro);
+            transition: color 0.3s;
+            font-size: 0.95rem;
+        }
+        nav a:hover { color: var(--color-verde); }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary { background-color: var(--color-verde); color: var(--color-blanco); }
+        .btn-primary:hover { background-color: var(--color-verde-oscuro); transform: translateY(-2px); }
+        .btn-secondary { background-color: var(--color-naranja); color: var(--color-blanco); }
+        .btn-secondary:hover { background-color: #c9871c; transform: translateY(-2px); }
+
+        /* ===== HERO ===== */
+        .hero {
+            background: linear-gradient(135deg, var(--color-verde) 0%, var(--color-verde-oscuro) 100%);
+            color: var(--color-blanco);
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .hero h1 { font-size: 3rem; color: var(--color-blanco); margin-bottom: 15px; }
+        .hero p { font-size: 1.3rem; max-width: 700px; margin: 0 auto 30px; opacity: 0.9; }
+        .hero .btn { font-size: 1.1rem; padding: 15px 35px; }
+
+        /* ===== SECCIONES GENERALES ===== */
+        section { padding: 70px 0; }
+        section:nth-child(even) { background-color: var(--color-gris-claro); }
+        .section-title { text-align: center; font-size: 2.2rem; margin-bottom: 15px; color: var(--color-verde-oscuro); }
+        .section-subtitle { text-align: center; color: #666; margin-bottom: 50px; font-size: 1.1rem; }
+
+        /* ===== CÓMO FUNCIONA ===== */
+        .pasos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        .paso {
+            background: var(--color-blanco);
+            padding: 30px;
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+            text-align: center;
+            transition: transform 0.3s;
+            border-bottom: 4px solid var(--color-naranja);
+        }
+        .paso:hover { transform: translateY(-5px); }
+        .paso .icono { font-size: 3rem; margin-bottom: 15px; }
+        .paso h3 { margin-bottom: 10px; color: var(--color-verde); }
+
+        /* ===== QUIÉNES SOMOS ===== */
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .about-card {
+            background: var(--color-blanco);
+            padding: 40px;
+            border-radius: var(--radio);
+            border-top: 5px solid var(--color-verde);
+            box-shadow: var(--sombra);
+        }
+        .about-card:nth-child(2) { border-top-color: var(--color-naranja); }
+        .about-icon { font-size: 2.5rem; margin-bottom: 15px; }
+        .about-card h3 { margin-bottom: 15px; color: var(--color-gris-oscuro); font-size: 1.5rem; }
+        .about-card p { color: #555; line-height: 1.8; text-align: justify; font-size: 0.95rem; }
+
+        /* ===== CARRUSEL DE PRODUCTOS ===== */
+        .carousel-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .carousel-container {
+            overflow: hidden;
+            width: 100%;
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+            background: var(--color-blanco);
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.4s ease-in-out;
+            gap: 20px;
+        }
+
+        .producto-card {
+            min-width: calc(50% - 10px);
+            background: var(--color-blanco);
+            border-radius: var(--radio);
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 1px solid #eee;
+        }
+
+        .producto-card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+        }
+
+        .producto-info { padding: 25px; }
+        .producto-info h3 { color: var(--color-verde); margin-bottom: 10px; font-size: 1.3rem; }
+        .producto-info p { color: #666; font-size: 0.95rem; margin-bottom: 15px; }
+
+        .precio {
+            display: inline-block;
+            background: var(--color-naranja);
+            color: var(--color-blanco);
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .carousel-btn {
+            background: var(--color-verde);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            position: absolute;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .carousel-btn:hover { background: var(--color-verde-oscuro); }
+        .carousel-btn.prev { left: -20px; }
+        .carousel-btn.next { right: -20px; }
+
+        .carousel-dots { display: flex; justify-content: center; gap: 10px; margin-top: 25px; }
+        .dot { width: 12px; height: 12px; background: #ccc; border-radius: 50%; cursor: pointer; transition: background 0.3s; }
+        .dot.active { background: var(--color-verde); transform: scale(1.2); }
+
+        /* ===== MAPA ===== */
+        #map { height: 450px; width: 100%; border-radius: var(--radio); box-shadow: var(--sombra); z-index: 1; }
+        .mapa-wrapper { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: start; }
+        .lista-puntos { background: var(--color-blanco); padding: 20px; border-radius: var(--radio); box-shadow: var(--sombra); max-height: 450px; overflow-y: auto; }
+        .lista-puntos h3 { margin-bottom: 15px; color: var(--color-verde); }
+        .punto-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; border-radius: 8px; }
+        .punto-item:hover { background-color: #f0fdf4; }
+        .punto-item:last-child { border-bottom: none; }
+        .punto-item strong { display: block; color: var(--color-gris-oscuro); }
+        .punto-item small { color: #777; }
+
+        /* ===== FORMULARIO ===== */
+        .form-solicitud { max-width: 700px; margin: 0 auto; background: var(--color-blanco); padding: 40px; border-radius: var(--radio); box-shadow: var(--sombra); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--color-gris-oscuro); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--color-verde); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-solicitud .btn { width: 100%; padding: 15px; font-size: 1.1rem; margin-top: 10px; }
+
+        /* ===== AUTENTICACIÓN ===== */
+        .auth-container { max-width: 450px; margin: 0 auto; background: var(--color-blanco); padding: 40px; border-radius: var(--radio); box-shadow: var(--sombra); }
+        .auth-tabs { display: flex; margin-bottom: 30px; border-bottom: 2px solid #eee; }
+        .auth-tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: #999; transition: all 0.3s; }
+        .auth-tab.active { color: var(--color-verde); border-bottom: 3px solid var(--color-verde); }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+
+        /* ===== MENSAJES ===== */
+        .mensaje { padding: 15px; border-radius: 8px; margin-top: 15px; display: none; }
+        .mensaje.exito { background-color: #d4edda; color: #155724; display: block; }
+        .mensaje.error { background-color: #f8d7da; color: #721c24; display: block; }
+
+        /* ===== IMPACTO ===== */
+        .impacto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; text-align: center; }
+        .impacto-item { background: var(--color-blanco); padding: 30px; border-radius: var(--radio); box-shadow: var(--sombra); }
+        .impacto-item .numero { font-size: 2.5rem; font-weight: 800; color: var(--color-naranja); display: block; }
+        .impacto-item .etiqueta { color: #666; font-size: 0.95rem; }
+
+        /* ===== FOOTER ===== */
+        footer { background-color: var(--color-gris-oscuro); color: var(--color-blanco); text-align: center; padding: 30px 0; margin-top: 40px; }
+        footer p { opacity: 0.8; font-size: 0.9rem; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .header-inner { flex-direction: column; gap: 15px; }
+            nav ul { flex-wrap: wrap; justify-content: center; gap: 15px; }
+            .hero h1 { font-size: 2rem; }
+            .mapa-wrapper { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .form-solicitud { padding: 25px; }
+            .about-grid { grid-template-columns: 1fr; }
+            .producto-card { min-width: 100%; }
+            .carousel-btn { width: 35px; height: 35px; }
+            .carousel-btn.prev { left: -10px; }
+            .carousel-btn.next { right: -10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header>
+        <div class="container header-inner">
+            <!-- Logo en texto normal -->
+            <a href="#" class="logo">Re<span>FUEL</span></a>
+            <nav>
+                <ul>
+                    <li><a href="#como-funciona">Cómo funciona</a></li>
+                    <li><a href="#quienes-somos">Quiénes Somos</a></li>
+                    <li><a href="#productos">Productos</a></li>
+                    <li><a href="#puntos">Puntos de Acopio</a></li>
+                    <li><a href="#solicitar">Solicitar</a></li>
+                    <li id="nav-auth"><a href="#auth" class="btn btn-primary">Iniciar sesión</a></li>
+                    <li id="nav-logout" style="display: none;">
+                        <a href="#" id="btn-logout" class="btn btn-secondary">Cerrar sesión</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+        <div class="container">
+            <h1>El aceite de ayer es la luz de hoy</h1>
+            <p>Transformamos el aceite de cocina usado en jabón sólido vegano y velas aromáticas. Únete a la red de reciclaje más grande de Nicaragua.</p>
+            <a href="#solicitar" class="btn btn-secondary">Quiero reciclar mi aceite</a>
+        </div>
+    </section>
+
+    <!-- ===== CÓMO FUNCIONA ===== -->
+    <section id="como-funciona">
+        <div class="container">
+            <h2 class="section-title">¿Cómo funciona?</h2>
+            <p class="section-subtitle">Tres simples pasos para ser parte del cambio</p>
+            <div class="pasos-grid">
+                <div class="paso">
+                    <div class="icono">🛢️</div>
+                    <h3>1. Recolecta</h3>
+                    <p>Guarda tu aceite de cocina usado en una botella o recipiente cerrado. No lo tires al drenaje.</p>
+                </div>
+                <div class="paso">
+                    <div class="icono">📍</div>
+                    <h3>2. Entrega</h3>
+                    <p>Lleva tu aceite a uno de nuestros puntos de acopio o solicita una recolección a domicilio.</p>
+                </div>
+                <div class="paso">
+                    <div class="icono">🧼</div>
+                    <h3>3. Transformamos</h3>
+                    <p>Convertimos el aceite en jabón y velas de alta calidad, generando un impacto positivo en el medio ambiente.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== QUIÉNES SOMOS ===== -->
+    <section id="quienes-somos">
+        <div class="container">
+            <h2 class="section-title">¿Quiénes somos?</h2>
+            <p class="section-subtitle">Conoce la visión y misión detrás de ReFuel</p>
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="about-icon">🌱</div>
+                    <h3>Nuestra Misión</h3>
+                    <p>En ReFuel, priorizamos a las familias y su bienestar, brindándoles una forma sencilla de obtener ingresos mediante la recolección de aceite de cocina utilizado. Buscamos darle una segunda vida a este residuo, transformándolo en productos útiles y económicos, como jabones y candelas. Al trabajar junto a las familias y pulperías, reducimos la contaminación del agua y fomentamos el hábito de reciclar.</p>
+                </div>
+                <div class="about-card">
+                    <div class="about-icon">🌟</div>
+                    <h3>Nuestra Visión</h3>
+                    <p>Ser un proyecto de innovación referente en Latinoamérica enfocado en la reutilización del aceite de cocina usado, llevando nuestro modelo de economía circular a más comunidades. Demostramos que, con el apoyo de las familias y los negocios locales, podemos cuidar el medioambiente, aprovechar los residuos y crear oportunidades económicas para todos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CARRUSEL DE PRODUCTOS ===== -->
+    <section id="productos">
+        <div class="container">
+            <h2 class="section-title">Nuestros Productos</h2>
+            <p class="section-subtitle">Innovación y sostenibilidad en cada artículo</p>
+            
+            <div class="carousel-wrapper">
+                <button class="carousel-btn prev" id="btn-prev">&#10094;</button>
+                
+                <div class="carousel-container">
+                    <div class="carousel-track" id="carousel-track">
+                        
+                        <!-- Producto 1 (Foto de internet) -->
+                        <div class="producto-card">
+                            <img src="https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?q=80&w=600&auto=format&fit=crop" alt="Jabón Modular ReFuel">
+                            <div class="producto-info">
+                                <h3>Jabón Modular Vegano</h3>
+                                <p>Bloques de 100g con fórmula 100% vegetal, biodegradable y empacado en hoja de plátano. Rinde más y cuida el agua.</p>
+                                <span class="precio">C$20 / $0.55</span>
+                            </div>
+                        </div>
+
+                        <!-- Producto 2 (Foto de internet) -->
+                        <div class="producto-card">
+                            <img src="https://images.unsplash.com/photo-1603006905003-be475563bc59?q=80&w=600&auto=format&fit=crop" alt="Velas Aromáticas ReFuel">
+                            <div class="producto-info">
+                                <h3>Velas Aromáticas</h3>
+                                <p>Elaboradas con el aceite filtrado, libres de parafina y con esencias naturales. "El aceite de ayer es la luz de hoy".</p>
+                                <span class="precio">C$20 / $0.55</span>
+                            </div>
+                        </div>
+
+                        <!-- Producto 3 (Foto de internet) -->
+                        <div class="producto-card">
+                            <img src="https://images.unsplash.com/photo-1615671524827-c1fe3973b648?q=80&w=600&auto=format&fit=crop" alt="Empaque Ecológico">
+                            <div class="producto-info">
+                                <h3>Empaque Cero Plástico</h3>
+                                <p>Usamos biomasa local (hojas de plátano) para envolver nuestros productos, garantizando un ciclo de residuo cero.</p>
+                                <span class="precio">Incluido</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <button class="carousel-btn next" id="btn-next">&#10095;</button>
+            </div>
+            <div class="carousel-dots" id="carousel-dots"></div>
+        </div>
+    </section>
+
+    <!-- ===== MAPA Y PUNTOS DE ACOPIO ===== -->
+    <section id="puntos">
+        <div class="container">
+            <h2 class="section-title">Puntos de acopio</h2>
+            <p class="section-subtitle">Encuentra el centro de recolección más cercano en Nicaragua</p>
+            <div class="mapa-wrapper">
+                <div id="map"></div>
+                <div class="lista-puntos">
+                    <h3>Centros disponibles</h3>
+                    <div id="lista-puntos-container"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FORMULARIO DE SOLICITUD ===== -->
+    <section id="solicitar">
+        <div class="container">
+            <h2 class="section-title">Solicitar recolección</h2>
+            <p class="section-subtitle">Programa la entrega de tu aceite usado y recibe un incentivo económico</p>
+            <form id="form-solicitud" class="form-solicitud">
+                <div class="form-group">
+                    <label for="punto">Punto de acopio *</label>
+                    <select id="punto" required>
+                        <option value="">Selecciona un punto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tipo-aceite">Tipo de aceite *</label>
+                    <select id="tipo-aceite" required>
+                        <option value="">Selecciona el tipo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="litros">Litros estimados *</label>
+                    <input type="number" id="litros" step="0.1" min="0.1" placeholder="Ej: 2.5" required>
+                </div>
+                <div class="form-group">
+                    <label for="direccion">Dirección de recolección (opcional)</label>
+                    <input type="text" id="direccion" placeholder="Si deseas que pasemos por tu aceite">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fecha">Fecha deseada</label>
+                        <input type="datetime-local" id="fecha">
+                    </div>
+                    <div class="form-group">
+                        <label for="notas">Notas adicionales</label>
+                        <input type="text" id="notas" placeholder="Ej: Aceite de girasol usado">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+                <div id="mensaje-solicitud" class="mensaje"></div>
+            </form>
+        </div>
+    </section>
+
+    <!-- ===== AUTENTICACIÓN ===== -->
+    <section id="auth">
+        <div class="container">
+            <h2 class="section-title">Accede a tu cuenta</h2>
+            <p class="section-subtitle">Inicia sesión o regístrate para gestionar tus recolecciones</p>
+            <div class="auth-container">
+                <div class="auth-tabs">
+                    <div class="auth-tab active" data-form="login">Iniciar sesión</div>
+                    <div class="auth-tab" data-form="registro">Registrarse</div>
+                </div>
+
+                <!-- Login -->
+                <form id="form-login" class="auth-form active">
+                    <div class="form-group">
+                        <label for="login-email">Correo electrónico</label>
+                        <input type="email" id="login-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Contraseña</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Entrar</button>
+                    <div id="mensaje-login" class="mensaje"></div>
+                </form>
+
+                <!-- Registro -->
+                <form id="form-registro" class="auth-form">
+                    <div class="form-group">
+                        <label for="reg-nombre">Nombre completo</label>
+                        <input type="text" id="reg-nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">Correo electrónico</label>
+                        <input type="email" id="reg-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-telefono">Teléfono</label>
+                        <input type="tel" id="reg-telefono" placeholder="+505 8888 8888">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Contraseña</label>
+                        <input type="password" id="reg-password" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-secondary" style="width:100%;">Crear cuenta</button>
+                    <div id="mensaje-registro" class="mensaje"></div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== IMPACTO ===== -->
+    <section id="impacto">
+        <div class="container">
+            <h2 class="section-title">Nuestro impacto</h2>
+            <p class="section-subtitle">Cada litro de aceite reciclado cuenta</p>
+            <div class="impacto-grid">
+                <div class="impacto-item">
+                    <span class="numero">40,000</span>
+                    <span class="etiqueta">Litros de agua no contaminados por litro de aceite</span>
+                </div>
+                <div class="impacto-item">
+                    <span class="numero">12,150</span>
+                    <span class="etiqueta">Barras de jabón producidas mensualmente</span>
+                </div>
+                <div class="impacto-item">
+                    <span class="numero">1,500</span>
+                    <span class="etiqueta">Litros de aceite recolectados al mes</span>
+                </div>
+                <div class="impacto-item">
+                    <span class="numero">C$10</span>
+                    <span class="etiqueta">Incentivo por litro para las familias</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="container">
+            <p>ReFuel &copy; 2026 - Rally Latinoamericano de Innovación</p>
+            <p>El aceite de ayer es la luz de hoy.</p>
+        </div>
+    </footer>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let map;
+        let markers = [];
+
+        async function apiFetch(endpoint, options = {}) {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` }),
+                    ...options.headers,
+                },
+                ...options,
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ message: 'Error de red' }));
+                throw new Error(error.message || `Error ${response.status}`);
+            }
+            if (response.status === 204) return null;
+            return response.json();
+        }
+
+        function initMap() {
+            map = L.map('map').setView([12.8654, -85.2072], 7);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+        }
+
+        async function cargarPuntos() {
+            try {
+                const puntos = await apiFetch('/points');
+                const container = document.getElementById('lista-puntos-container');
+                container.innerHTML = '';
+                markers.forEach(m => map.removeLayer(m));
+                markers = [];
+
+                puntos.forEach(p => {
+                    const div = document.createElement('div');
+                    div.className = 'punto-item';
+                    div.innerHTML = `
+                        <strong>${p.name}</strong>
+                        <small>${p.address}</small><br>
+                        <small>🕒 ${p.schedule || 'Horario no disponible'}</small><br>
+                        <small>📞 ${p.contact_phone || 'Sin teléfono'}</small>
+                    `;
+                    div.addEventListener('click', () => {
+                        map.setView([parseFloat(p.latitude), parseFloat(p.longitude)], 14);
+                        const marker = markers.find(m => m.puntoId === p.id);
+                        if (marker) marker.openPopup();
+                    });
+                    container.appendChild(div);
+
+                    if (p.latitude && p.longitude) {
+                        const marker = L.marker([parseFloat(p.latitude), parseFloat(p.longitude)])
+                            .addTo(map)
+                            .bindPopup(`<strong>${p.name}</strong><br>${p.address}`);
+                        marker.puntoId = p.id;
+                        markers.push(marker);
+                    }
+                });
+
+                const selectPunto = document.getElementById('punto');
+                selectPunto.innerHTML = '<option value="">Selecciona un punto</option>';
+                puntos.forEach(p => {
+                    selectPunto.innerHTML += `<option value="${p.id}">${p.name} — ${p.address}</option>`;
+                });
+            } catch (error) {
+                console.error('Error al cargar puntos:', error);
+            }
+        }
+
+        async function cargarTiposAceite() {
+            try {
+                const tipos = await apiFetch('/oil-types');
+                const select = document.getElementById('tipo-aceite');
+                select.innerHTML = '<option value="">Selecciona el tipo</option>';
+                tipos.forEach(t => {
+                    select.innerHTML += `<option value="${t.id}">${t.name} — ${t.description || ''}</option>`;
+                });
+            } catch (error) {
+                console.error('Error al cargar tipos de aceite:', error);
+            }
+        }
+
+        function actualizarUI() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            const navAuth = document.getElementById('nav-auth');
+            const navLogout = document.getElementById('nav-logout');
+
+            if (token && user) {
+                navAuth.style.display = 'none';
+                navLogout.style.display = 'block';
+            } else {
+                navAuth.style.display = 'block';
+                navLogout.style.display = 'none';
+            }
+        }
+
+        document.getElementById('btn-logout')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            actualizarUI();
+            alert('Sesión cerrada correctamente.');
+        });
+
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`form-${tab.dataset.form}`).classList.add('active');
+            });
+        });
+
+        document.getElementById('form-login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const msg = document.getElementById('mensaje-login');
+
+            try {
+                const data = await apiFetch('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password }),
+                });
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                msg.className = 'mensaje exito';
+                msg.textContent = '¡Bienvenido de nuevo!';
+                actualizarUI();
+                setTimeout(() => { msg.style.display = 'none'; }, 3000);
+            } catch (error) {
+                msg.className = 'mensaje error';
+                msg.textContent = error.message;
+            }
+        });
+
+        document.getElementById('form-registro').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('reg-nombre').value;
+            const email = document.getElementById('reg-email').value;
+            const phone = document.getElementById('reg-telefono').value;
+            const password = document.getElementById('reg-password').value;
+            const msg = document.getElementById('mensaje-registro');
+
+            try {
+                const data = await apiFetch('/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, email, phone, password }),
+                });
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                msg.className = 'mensaje exito';
+                msg.textContent = '¡Registro exitoso!';
+                actualizarUI();
+                setTimeout(() => { msg.style.display = 'none'; }, 3000);
+            } catch (error) {
+                msg.className = 'mensaje error';
+                msg.textContent = error.message;
+            }
+        });
+
+        document.getElementById('form-solicitud').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Debes iniciar sesión para enviar una solicitud.');
+                document.getElementById('auth').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            const pointId = parseInt(document.getElementById('punto').value);
+            const oilTypeId = parseInt(document.getElementById('tipo-aceite').value);
+            const estimatedLiters = parseFloat(document.getElementById('litros').value);
+            const pickupAddress = document.getElementById('direccion').value || null;
+            const scheduledAt = document.getElementById('fecha').value || null;
+            const notes = document.getElementById('notas').value || null;
+            const msg = document.getElementById('mensaje-solicitud');
+
+            if (!pointId || !oilTypeId || !estimatedLiters || estimatedLiters <= 0) {
+                msg.className = 'mensaje error';
+                msg.textContent = 'Completa los campos obligatorios.';
+                return;
+            }
+
+            try {
+                await apiFetch('/requests', {
+                    method: 'POST',
+                    body: JSON.stringify({ pointId, oilTypeId, estimatedLiters, pickupAddress, scheduledAt, notes }),
+                });
+                msg.className = 'mensaje exito';
+                msg.textContent = '¡Solicitud enviada con éxito!';
+                e.target.reset();
+                setTimeout(() => { msg.style.display = 'none'; }, 5000);
+            } catch (error) {
+                msg.className = 'mensaje error';
+                msg.textContent = error.message;
+            }
+        });
+
+        // ===== LÓGICA DEL CARRUSEL ARREGLADA =====
+        function initCarrusel() {
+            const track = document.getElementById('carousel-track');
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+            const dotsContainer = document.getElementById('carousel-dots');
+            if (!track) return;
+
+            const items = track.querySelectorAll('.producto-card');
+            let currentIndex = 0;
+
+            const getVisibleItems = () => window.innerWidth <= 768 ? 1 : 2;
+
+            const updateDots = () => {
+                dotsContainer.innerHTML = '';
+                const totalDots = items.length - getVisibleItems() + 1;
+                for (let i = 0; i < totalDots; i++) {
+                    const dot = document.createElement('div');
+                    dot.classList.add('dot');
+                    if (i === currentIndex) dot.classList.add('active');
+                    dot.addEventListener('click', () => {
+                        currentIndex = i;
+                        updateCarousel();
+                    });
+                    dotsContainer.appendChild(dot);
+                }
+            };
+
+            const updateCarousel = () => {
+                const visible = getVisibleItems();
+                const maxIndex = items.length - visible;
+                if (currentIndex > maxIndex) currentIndex = maxIndex;
+                if (currentIndex < 0) currentIndex = 0;
+
+                if(items.length > 0) {
+                    const cardWidth = items[0].getBoundingClientRect().width;
+                    const gap = 20;
+                    const moveAmount = (cardWidth + gap) * currentIndex;
+                    track.style.transform = `translateX(-${moveAmount}px)`;
+                }
+                
+                const dots = dotsContainer.querySelectorAll('.dot');
+                dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
+            };
+
+            btnNext.addEventListener('click', () => { currentIndex++; updateCarousel(); });
+            btnPrev.addEventListener('click', () => { currentIndex--; updateCarousel(); });
+
+            window.addEventListener('resize', () => {
+                currentIndex = 0; 
+                updateDots();
+                updateCarousel();
+            });
+
+            updateDots();
+            updateCarousel();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            cargarPuntos();
+            cargarTiposAceite();
+            actualizarUI();
+            initCarrusel();
+        });
+    </script>
+</body>
+</html>
